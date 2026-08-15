@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda Compartilhada</title>
+  <meta name="description" content="Agenda da equipe: todo mundo cria, edita e comenta os eventos." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+  <!-- ------------------------------------------------------ entrada -->
+  <section id="auth-screen" class="auth hidden">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="auth-logo">📅</span>
+        <div>
+          <h1>Agenda Compartilhada</h1>
+          <p class="muted">A agenda da equipe: todo mundo adiciona, edita e comenta.</p>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab is-active" data-auth-tab="login" role="tab">Entrar</button>
+        <button class="tab" data-auth-tab="register" role="tab">Criar conta</button>
+      </div>
+
+      <form id="login-form" class="stack">
+        <label>E-mail
+          <input type="email" name="email" autocomplete="username" required />
+        </label>
+        <label>Senha
+          <input type="password" name="password" autocomplete="current-password" required />
+        </label>
+        <button class="btn btn-primary" type="submit">Entrar na agenda</button>
+      </form>
+
+      <form id="register-form" class="stack hidden">
+        <label>Nome completo
+          <input type="text" name="name" autocomplete="name" required />
+        </label>
+        <label>E-mail de trabalho
+          <input type="email" name="email" autocomplete="username" required />
+        </label>
+        <label>Senha (mínimo 8 caracteres)
+          <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <label id="invite-field" class="hidden">Código de convite da equipe
+          <input type="text" name="invite" autocomplete="off" />
+        </label>
+        <button class="btn btn-primary" type="submit">Criar minha conta</button>
+      </form>
+
+      <p id="auth-error" class="error hidden" role="alert"></p>
+      <p id="auth-hint" class="muted small"></p>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------------ agenda -->
+  <div id="app-screen" class="app hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="logo">📅</span>
+        <strong>Agenda Compartilhada</strong>
+      </div>
+
+      <div class="topbar-center">
+        <button class="btn btn-ghost icon" id="prev-btn" title="Anterior" aria-label="Período anterior">‹</button>
+        <button class="btn btn-ghost" id="today-btn">Hoje</button>
+        <button class="btn btn-ghost icon" id="next-btn" title="Próximo" aria-label="Próximo período">›</button>
+        <h2 id="period-label">—</h2>
+      </div>
+
+      <div class="topbar-right">
+        <input type="search" id="search-input" placeholder="Buscar evento..." aria-label="Buscar evento" />
+        <div class="switch" role="tablist">
+          <button class="switch-btn is-active" data-view="month">Mês</button>
+          <button class="switch-btn" data-view="list">Lista</button>
+        </div>
+        <button class="btn btn-primary" id="new-event-btn">+ Novo evento</button>
+        <button class="avatar" id="user-btn" title="Sua conta"></button>
+      </div>
+    </header>
+
+    <div id="user-menu" class="menu hidden">
+      <div class="menu-header">
+        <strong id="menu-name"></strong>
+        <span class="muted small" id="menu-email"></span>
+        <span class="badge" id="menu-role"></span>
+      </div>
+      <button class="menu-item" id="team-btn">Ver equipe</button>
+      <button class="menu-item" id="password-btn">Alterar senha</button>
+      <button class="menu-item danger" id="logout-btn">Sair</button>
+    </div>
+
+    <main class="content">
+      <section id="month-view">
+        <div class="weekdays">
+          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+        </div>
+        <div class="grid" id="month-grid"></div>
+      </section>
+
+      <section id="list-view" class="hidden">
+        <div id="list-body" class="list"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ------------------------------------------------------ evento -->
+  <div id="event-modal" class="overlay hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="event-title">
+      <header class="modal-head">
+        <h3 id="event-title">Evento</h3>
+        <button class="btn btn-ghost icon" data-close-modal aria-label="Fechar">×</button>
+      </header>
+
+      <div class="modal-body">
+        <!-- leitura -->
+        <div id="event-view">
+          <div id="event-meta" class="meta"></div>
+          <p id="event-description" class="description"></p>
+          <div class="row-actions">
+            <button class="btn" id="edit-event-btn">Editar evento</button>
+            <button class="btn btn-danger-ghost hidden" id="delete-event-btn">Excluir</button>
+          </div>
+
+          <h4 class="section-title">Comentários <span id="comment-count" class="muted"></span></h4>
+          <div id="comment-list" class="comments"></div>
+          <form id="comment-form" class="comment-form">
+            <textarea name="body" rows="2" placeholder="Escreva um comentário para a equipe..." required></textarea>
+            <button class="btn btn-primary" type="submit">Comentar</button>
+          </form>
+
+          <details class="history">
+            <summary>Histórico de alterações</summary>
+            <ul id="activity-list"></ul>
+          </details>
+        </div>
+
+        <!-- edição / criacao -->
+        <form id="event-form" class="stack hidden">
+          <label>Título
+            <input type="text" name="title" maxlength="140" required placeholder="Reunião de alinhamento" />
+          </label>
+
+          <label class="check">
+            <input type="checkbox" name="allDay" /> Dia inteiro
+          </label>
+
+          <div class="two">
+            <label>Início
+              <input type="datetime-local" name="startAt" required />
+            </label>
+            <label>Término
+              <input type="datetime-local" name="endAt" required />
+            </label>
+          </div>
+
+          <div class="two">
+            <label>Local
+              <input type="text" name="location" maxlength="140" placeholder="Sala 2 / Google Meet" />
+            </label>
+            <label>Cor
+              <select name="color" id="color-select"></select>
+            </label>
+          </div>
+
+          <label>Descrição
+            <textarea name="description" rows="4" placeholder="Pauta, participantes, links..."></textarea>
+          </label>
+
+          <p id="event-error" class="error hidden" role="alert"></p>
+
+          <div class="row-actions">
+            <button class="btn btn-primary" type="submit" id="save-event-btn">Salvar</button>
+            <button class="btn" type="button" id="cancel-edit-btn">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------ equipe -->
+  <div id="team-modal" class="overlay hidden">
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="team-title">
+      <header class="modal-head">
+        <h3 id="team-title">Equipe</h3>
+        <button class="btn btn-ghost icon" data-close-modal aria-label="Fechar">×</button>
+      </header>
+      <div class="modal-body">
+        <p class="muted small">Todos os membros podem criar, editar e comentar eventos.</p>
+        <ul id="team-list" class="team"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------ senha -->
+  <div id="password-modal" class="overlay hidden">
+    <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="password-title">
+      <header class="modal-head">
+        <h3 id="password-title">Alterar senha</h3>
+        <button class="btn btn-ghost icon" data-close-modal aria-label="Fechar">×</button>
+      </header>
+      <div class="modal-body">
+        <form id="password-form" class="stack">
+          <label>Senha atual
+            <input type="password" name="current" autocomplete="current-password" required />
+          </label>
+          <label>Nova senha
+            <input type="password" name="next" autocomplete="new-password" minlength="8" required />
+          </label>
+          <p id="password-error" class="error hidden" role="alert"></p>
+          <button class="btn btn-primary" type="submit">Salvar nova senha</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

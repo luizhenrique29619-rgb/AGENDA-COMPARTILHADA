@@ -1,17 +1,35 @@
 'use strict';
 
+/*
+ * Camada de dados da agenda.
+ *
+ * Usa libSQL, que fala o mesmo SQL do SQLite. Isso permite dois modos com o
+ * mesmo codigo:
+ *
+ *   - arquivo local  -> desenvolvimento e servidor proprio (DATABASE_FILE)
+ *   - Turso          -> hospedagem gratuita, sem disco (TURSO_DATABASE_URL)
+ *
+ * Todas as funcoes sao assincronas porque o banco pode estar na rede.
+ */
+
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
+const { createClient } = require('@libsql/client');
 
-const dbFile = process.env.DATABASE_FILE || path.join(__dirname, '..', 'data', 'agenda.sqlite');
-fs.mkdirSync(path.dirname(path.resolve(dbFile)), { recursive: true });
+function resolveConfig() {
+  const remote = (process.env.TURSO_DATABASE_URL || '').trim();
+  if (remote) {
+    return { url: remote, authToken: process.env.TURSO_AUTH_TOKEN || undefined };
+  }
+  const file = process.env.DATABASE_FILE || path.join(__dirname, '..', 'data', 'agenda.sqlite');
+  const absolute = path.resolve(file);
+  fs.mkdirSync(path.dirname(absolute), { recursive: true });
+  return { url: `file:${absolute}` };
+}
 
-const db = new Database(dbFile);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const client = createClient(resolveConfig());
 
-db.exec(`
+const SCHEMA = `
   CREATE TABLE IF NOT EXISTS users (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     name          TEXT NOT NULL,
@@ -67,6 +85,40 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_comments_event ON comments(event_id);
   CREATE INDEX IF NOT EXISTS idx_activity_event ON activity(event_id);
   CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
-`);
+`;
 
-module.exports = db;
+/** Cria as tabelas na primeira execucao. Resolve uma vez so. */
+let initPromise;
+function init() {
+  if (!initPromise) {
+    initPromise = (async () => {
+      await client.executeMultiple(SCHEMA);
+      // Chaves estrangeiras precisam ser ligadas por conexao no modo arquivo.
+      await client.execute('PRAGMA foreign_keys = ON').catch(() => {});
+    })();
+  }
+  return initPromise;
+}
+
+/** Primeira linha do resultado, ou null. */
+async function get(sql, args = []) {
+  const result = await client.execute({ sql, args });
+  return result.rows[0] ?? null;
+}
+
+/** Todas as linhas do resultado. */
+async function all(sql, args = []) {
+  const result = await client.execute({ sql, args });
+  return result.rows;
+}
+
+/** Executa uma escrita. O lastInsertRowid vem como BigInt e e convertido aqui. */
+async function run(sql, args = []) {
+  const result = await client.execute({ sql, args });
+  return {
+    lastInsertRowid: result.lastInsertRowid === undefined ? null : Number(result.lastInsertRowid),
+    rowsAffected: result.rowsAffected,
+  };
+}
+
+module.exports = { client, init, get, all, run };

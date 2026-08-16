@@ -39,7 +39,8 @@ Node.js) e ser acessada pelo navegador, no computador ou no celular.
 ## Como colocar no ar
 
 Requisitos: **Node.js 18 ou superior**. O banco é um arquivo SQLite criado sozinho — não
-precisa instalar banco de dados.
+precisa instalar banco de dados. Para publicar em hospedagem sem disco, o mesmo código aponta
+para o Turso trocando uma variável de ambiente (veja o [DEPLOY.md](DEPLOY.md)).
 
 ```bash
 git clone https://github.com/luizhenrique29619-rgb/AGENDA-COMPARTILHADA.git
@@ -56,16 +57,19 @@ Abra `http://localhost:3000`. **A primeira pessoa que se cadastrar vira administ
 | Variável | Para que serve |
 | --- | --- |
 | `PORT` | Porta do servidor (padrão `3000`). |
-| `DATABASE_FILE` | Onde guardar o banco (padrão `./data/agenda.sqlite`). |
+| `DATABASE_FILE` | Onde guardar o banco local (padrão `./data/agenda.sqlite`). |
+| `TURSO_DATABASE_URL` | Banco SQLite na nuvem. Quando preenchida, tem prioridade sobre o arquivo local. |
+| `TURSO_AUTH_TOKEN` | Token de acesso do banco Turso. |
 | `INVITE_CODE` | Código que os colegas digitam ao criar a conta. Deixe em branco só se a agenda estiver em rede interna. |
 | `SECURE_COOKIES` | Coloque `true` quando o site estiver publicado em HTTPS. |
 | `SESSION_DAYS` | Quantos dias o login continua válido (padrão `30`). |
 
 ### Publicando para a equipe
 
-O passo a passo completo está em **[DEPLOY.md](DEPLOY.md)** — Fly.io, Render ou servidor
-próprio com Docker. O repositório já traz `Dockerfile`, `docker-compose.yml`, `fly.toml` e
-`render.yaml` prontos, com o disco persistente configurado.
+O passo a passo completo está em **[DEPLOY.md](DEPLOY.md)**. Há um caminho **gratuito e sem
+cartão de crédito** (Render + Turso), um pago que não dorme (Fly.io) e um para servidor
+próprio (Docker). O repositório já traz `Dockerfile`, `docker-compose.yml`, `fly.toml`,
+`render.yaml` e o script `deploy-fly.sh` prontos.
 
 ### Convidando a equipe
 
@@ -84,16 +88,18 @@ Apague o arquivo do banco (`data/agenda.sqlite`) para começar do zero.
 
 ## Backup
 
-Todo o conteúdo fica em `data/agenda.sqlite`. Para fazer backup, basta copiar essa pasta
-(com o servidor parado, ou usando `sqlite3 data/agenda.sqlite ".backup copia.sqlite"`).
+Com banco local, todo o conteúdo fica em `data/agenda.sqlite` — para fazer backup basta copiar
+o arquivo (com o servidor parado, ou usando `sqlite3 data/agenda.sqlite ".backup copia.sqlite"`).
+Com banco no Turso, use `turso db shell agenda ".dump" > copia.sql`.
 
 ## Estrutura do projeto
 
 ```
 src/
   server.js          Express: middlewares, API e arquivos estáticos
-  db.js              SQLite + criação das tabelas
+  db.js              Banco (arquivo local ou Turso) + criação das tabelas
   auth.js            Sessões em cookie httpOnly
+  wrap.js            Encaminha erros de rotas assíncronas ao tratador
   routes/
     auth.js          cadastro, login, logout, troca de senha
     events.js        eventos e criação de comentários

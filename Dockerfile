@@ -1,5 +1,5 @@
 # Imagem de producao da Agenda Compartilhada.
-# Debian slim (e nao alpine) porque o better-sqlite3 tem binario pronto para glibc,
+# Debian slim (e nao alpine) porque o cliente libSQL tem binario pronto para glibc,
 # o que evita compilar codigo nativo durante o build.
 FROM node:22-slim
 

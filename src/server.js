@@ -4,6 +4,8 @@ const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
+const db = require('./db');
+const wrap = require('./wrap');
 const { loadUser } = require('./auth');
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
@@ -13,10 +15,17 @@ const userRoutes = require('./routes/users');
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
 
+// Criação das tabelas. Fica pronta antes da primeira requisição ser atendida.
+const ready = db.init();
+
 app.set('trust proxy', 1);
 app.use(express.json({ limit: '256kb' }));
 app.use(cookieParser());
-app.use(loadUser);
+app.use(wrap(async (_req, _res, next) => {
+  await ready;
+  next();
+}));
+app.use(wrap(loadUser));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
@@ -35,9 +44,17 @@ app.use((err, _req, res, _next) => {
 });
 
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`Agenda compartilhada rodando em http://localhost:${PORT}`);
-  });
+  ready
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Agenda compartilhada rodando em http://localhost:${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error('Não consegui preparar o banco de dados:', error);
+      process.exit(1);
+    });
 }
 
 module.exports = app;
+module.exports.ready = ready;

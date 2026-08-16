@@ -7,24 +7,20 @@ const COOKIE_NAME = 'agenda_sessao';
 const SESSION_DAYS = Number(process.env.SESSION_DAYS || 30);
 const SECURE_COOKIES = String(process.env.SECURE_COOKIES || 'false') === 'true';
 
-const insertSession = db.prepare(
-  'INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)'
-);
-const findSession = db.prepare(`
-  SELECT s.token, s.expires_at, u.id, u.name, u.email, u.role, u.color
-  FROM sessions s
-  JOIN users u ON u.id = s.user_id
-  WHERE s.token = ?
-`);
-const deleteSession = db.prepare('DELETE FROM sessions WHERE token = ?');
-const purgeExpired = db.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')");
+async function createSession(res, userId) {
+  await db.run("DELETE FROM sessions WHERE expires_at < datetime('now')").catch(() => {});
 
-function createSession(res, userId) {
-  purgeExpired.run();
   const token = crypto.randomBytes(32).toString('hex');
   const now = new Date();
   const expires = new Date(now.getTime() + SESSION_DAYS * 24 * 60 * 60 * 1000);
-  insertSession.run(token, userId, now.toISOString(), expires.toISOString());
+
+  await db.run('INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)', [
+    token,
+    userId,
+    now.toISOString(),
+    expires.toISOString(),
+  ]);
+
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'lax',
@@ -35,24 +31,37 @@ function createSession(res, userId) {
   return token;
 }
 
-function destroySession(req, res) {
+async function destroySession(req, res) {
   const token = req.cookies?.[COOKIE_NAME];
-  if (token) deleteSession.run(token);
+  if (token) await db.run('DELETE FROM sessions WHERE token = ?', [token]);
   res.clearCookie(COOKIE_NAME, { path: '/' });
 }
 
 /** Popula req.user quando houver sessão válida. Nunca bloqueia. */
-function loadUser(req, _res, next) {
-  const token = req.cookies?.[COOKIE_NAME];
-  if (!token) return next();
-  const row = findSession.get(token);
-  if (!row) return next();
-  if (new Date(row.expires_at).getTime() < Date.now()) {
-    deleteSession.run(token);
-    return next();
+async function loadUser(req, _res, next) {
+  try {
+    const token = req.cookies?.[COOKIE_NAME];
+    if (!token) return next();
+
+    const row = await db.get(
+      `SELECT s.expires_at, u.id, u.name, u.email, u.role, u.color
+       FROM sessions s
+       JOIN users u ON u.id = s.user_id
+       WHERE s.token = ?`,
+      [token]
+    );
+    if (!row) return next();
+
+    if (new Date(row.expires_at).getTime() < Date.now()) {
+      await db.run('DELETE FROM sessions WHERE token = ?', [token]);
+      return next();
+    }
+
+    req.user = { id: row.id, name: row.name, email: row.email, role: row.role, color: row.color };
+    next();
+  } catch (error) {
+    next(error);
   }
-  req.user = { id: row.id, name: row.name, email: row.email, role: row.role, color: row.color };
-  next();
 }
 
 /** Exige login para as rotas da API. */

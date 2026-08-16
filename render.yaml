@@ -1,0 +1,29 @@
+# Blueprint do Render (https://render.com).
+# No painel: New > Blueprint > aponte para este repositorio.
+#
+# Atencao: o plano gratuito do Render NAO tem disco persistente — a agenda
+# perderia os eventos a cada reinicio. Por isso o plano abaixo e o "starter",
+# que permite anexar o disco.
+services:
+  - type: web
+    name: agenda-compartilhada
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/server.js
+    healthCheckPath: /
+    disk:
+      name: dados
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_FILE
+        value: /var/data/agenda.sqlite
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: SESSION_DAYS
+        value: "30"
+      # Preenchido por voce no painel, na primeira implantacao.
+      - key: INVITE_CODE
+        sync: false

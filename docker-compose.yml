@@ -1,0 +1,19 @@
+# Subir a agenda em um servidor proprio ou VPS:
+#   INVITE_CODE="codigo-da-equipe" docker compose up -d
+services:
+  agenda:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_FILE: /data/agenda.sqlite
+      INVITE_CODE: ${INVITE_CODE:?defina o codigo de convite da equipe}
+      # Ligue quando houver HTTPS na frente (proxy reverso, Cloudflare, etc.)
+      SECURE_COOKIES: ${SECURE_COOKIES:-false}
+      SESSION_DAYS: ${SESSION_DAYS:-30}
+    volumes:
+      - agenda-dados:/data
+
+volumes:
+  agenda-dados:

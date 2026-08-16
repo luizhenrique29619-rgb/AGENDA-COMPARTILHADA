@@ -61,10 +61,15 @@ Abra `http://localhost:3000`. **A primeira pessoa que se cadastrar vira administ
 | `SECURE_COOKIES` | Coloque `true` quando o site estiver publicado em HTTPS. |
 | `SESSION_DAYS` | Quantos dias o login continua válido (padrão `30`). |
 
+### Publicando para a equipe
+
+O passo a passo completo está em **[DEPLOY.md](DEPLOY.md)** — Fly.io, Render ou servidor
+próprio com Docker. O repositório já traz `Dockerfile`, `docker-compose.yml`, `fly.toml` e
+`render.yaml` prontos, com o disco persistente configurado.
+
 ### Convidando a equipe
 
-1. Publique a agenda em um endereço que a equipe alcance (servidor da empresa, VPS, Render,
-   Railway, Fly.io — qualquer lugar que rode Node.js).
+1. Publique a agenda em um endereço que a equipe alcance (veja o [DEPLOY.md](DEPLOY.md)).
 2. Defina um `INVITE_CODE` e mande para os colegas junto com o link.
 3. Cada pessoa clica em **Criar conta**, informa nome, e-mail de trabalho, senha e o código.
 4. Pronto: todos veem a mesma agenda e as edições de um aparecem para os outros ao recarregar.

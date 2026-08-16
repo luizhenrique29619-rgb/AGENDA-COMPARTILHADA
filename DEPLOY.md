@@ -5,9 +5,10 @@ navegador. Escolha **um** dos caminhos abaixo.
 
 | Caminho | Custo | Cartão de crédito | Ponto fraco |
 | --- | --- | --- | --- |
-| **1. Render + Turso** | Grátis | Não pede | Dorme após 15 min sem uso; o primeiro acesso demora ~1 min |
-| **2. Fly.io** | Alguns dólares por mês | Pede no cadastro | Custo mensal |
-| **3. Servidor próprio / VPS** | O que você já paga | — | Você cuida do servidor |
+| **1. Vercel + Turso** | Grátis | Não pede | Exige o banco no Turso; o primeiro acesso após uma pausa demora alguns segundos |
+| **2. Render + Turso** | Grátis | Não pede | Dorme após 15 min sem uso; o primeiro acesso demora ~1 min |
+| **3. Fly.io** | Alguns dólares por mês | Pede no cadastro | Custo mensal |
+| **4. Servidor próprio / VPS** | O que você já paga | — | Você cuida do servidor |
 
 ## Onde ficam os dados
 
@@ -22,9 +23,9 @@ A agenda guarda tudo em um banco SQLite. Ela aceita dois modos, e o código é o
 
 ---
 
-## Opção 1 — Grátis: Render + Turso
+## Opção 1 — Grátis: Vercel + Turso
 
-Nenhuma das duas contas pede cartão de crédito.
+Nenhuma das duas contas pede cartão de crédito. Faça a **Parte A** (banco) e depois a **Parte B**.
 
 ### Parte A — Criar o banco no Turso
 
@@ -44,7 +45,60 @@ turso db show agenda --url        # a URL
 turso db tokens create agenda     # o token
 ```
 
-### Parte B — Publicar no Render
+### Parte B — Publicar na Vercel
+
+1. Acesse **[vercel.com](https://vercel.com)** e crie a conta entrando com o GitHub.
+2. No painel: **Add New…** → **Project** → escolha o repositório `AGENDA-COMPARTILHADA` → **Import**.
+3. Na tela de configuração:
+
+   | Campo | O que colocar |
+   | --- | --- |
+   | **Framework Preset** | `Other` |
+   | **Root Directory** | deixe como está — é a **raiz do repositório** (`./`). Não escolha subpasta. |
+   | **Build Command** | vazio (a agenda não precisa de build) |
+   | **Output Directory** | vazio |
+
+4. Ainda nessa tela, abra **Environment Variables** e cadastre quatro:
+
+   | Variável | O que colocar |
+   | --- | --- |
+   | `TURSO_DATABASE_URL` | a URL do passo A |
+   | `TURSO_AUTH_TOKEN` | o token do passo A |
+   | `INVITE_CODE` | um código secreto que você vai passar aos colegas |
+   | `SECURE_COOKIES` | `true` — a Vercel já entrega o site em HTTPS |
+
+5. Clique em **Deploy** e espere cerca de um minuto.
+
+O endereço fica parecido com `https://agenda-compartilhada.vercel.app`.
+
+> ⚠️ Na Vercel o `TURSO_DATABASE_URL` é **obrigatório**. O disco lá é somente leitura, então o
+> modo arquivo (`DATABASE_FILE`) não tem onde guardar os eventos — a agenda avisa isso com uma
+> mensagem clara em vez de falhar em silêncio.
+
+### O que a raiz do projeto tem para a Vercel
+
+| Arquivo | Para que serve |
+| --- | --- |
+| `vercel.json` | Manda toda rota que não é arquivo estático para a função da agenda. |
+| `api/index.js` | Entrada da função: entrega o mesmo app Express de `src/server.js`. |
+| `.vercelignore` | Deixa de fora do envio o que só serve para Docker, Fly e Render. |
+| `public/` | Páginas, CSS e JavaScript, servidos direto pela CDN da Vercel. |
+
+Como já existe o `vercel.json` na raiz, dá para publicar pelo terminal também:
+
+```bash
+npm i -g vercel
+vercel                # primeira vez: cria o projeto (aceite os padrões)
+vercel --prod         # publica em produção
+```
+
+---
+
+## Opção 2 — Grátis: Render + Turso
+
+O banco é o mesmo da Parte A da Opção 1.
+
+### Publicar no Render
 
 1. Acesse **[render.com](https://render.com)** e crie a conta (também dá para entrar com o GitHub).
 2. No painel: **New** → **Blueprint**.
@@ -67,11 +121,11 @@ O endereço fica parecido com `https://agenda-compartilhada.onrender.com`.
 - O serviço **dorme após 15 minutos sem acesso**. O primeiro acesso depois disso leva cerca de
   um minuto para responder — os seguintes são normais.
 - **Os dados não se perdem** quando ele dorme, porque ficam no Turso.
-- Se esse minuto de espera incomodar, a Opção 2 (paga) não dorme.
+- Se esse minuto de espera incomodar, a Opção 1 (Vercel) ou a Opção 3 (paga) não dormem.
 
 ---
 
-## Opção 2 — Fly.io (paga, não dorme)
+## Opção 3 — Fly.io (paga, não dorme)
 
 Roda o `Dockerfile` do repositório, com disco próprio e servidor em São Paulo (`gru`).
 **O Fly pede cartão de crédito no cadastro**, mesmo para uso pequeno.
@@ -98,7 +152,7 @@ fly open
 
 ---
 
-## Opção 3 — Servidor próprio ou VPS
+## Opção 4 — Servidor próprio ou VPS
 
 Qualquer máquina com Docker (inclusive um servidor da empresa):
 

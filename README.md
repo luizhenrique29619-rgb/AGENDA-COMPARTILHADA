@@ -66,10 +66,13 @@ Abra `http://localhost:3000`. **A primeira pessoa que se cadastrar vira administ
 
 ### Publicando para a equipe
 
-O passo a passo completo está em **[DEPLOY.md](DEPLOY.md)**. Há um caminho **gratuito e sem
-cartão de crédito** (Render + Turso), um pago que não dorme (Fly.io) e um para servidor
-próprio (Docker). O repositório já traz `Dockerfile`, `docker-compose.yml`, `fly.toml`,
-`render.yaml` e o script `deploy-fly.sh` prontos.
+O passo a passo completo está em **[DEPLOY.md](DEPLOY.md)**. Há dois caminhos **gratuitos e sem
+cartão de crédito** (Vercel + Turso ou Render + Turso), um pago que não dorme (Fly.io) e um
+para servidor próprio (Docker). O repositório já traz `vercel.json`, `api/index.js`,
+`Dockerfile`, `docker-compose.yml`, `fly.toml`, `render.yaml` e o script `deploy-fly.sh`
+prontos — nada precisa ser configurado à mão.
+
+Para a Vercel, a **Root Directory** do projeto é a raiz do repositório (`./`), sem subpasta.
 
 ### Convidando a equipe
 
@@ -110,6 +113,8 @@ public/
   css/styles.css     Estilo (tema claro e escuro)
   js/app.js          Calendário, formulários e comentários
 scripts/seed.js      Dados de demonstração
+api/index.js         Entrada da Vercel: entrega o mesmo app de src/server.js
+vercel.json          Rotas da Vercel (estáticos na CDN, o resto na função)
 ```
 
 ## API

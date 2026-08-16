@@ -43,6 +43,21 @@ function resolveConfig() {
     const authToken = (process.env.TURSO_AUTH_TOKEN || '').replace(/^["']|["']$/g, '').trim();
     return { url: checkRemoteUrl(remote), authToken: authToken || undefined };
   }
+  /*
+   * Hospedagens sem disco (Vercel, e o mesmo vale para qualquer serverless) tem
+   * o sistema de arquivos somente leitura e trocam de maquina a cada acesso.
+   * Sem essa checagem o erro que aparece e um EROFS no meio do libSQL.
+   */
+  if (process.env.VERCEL) {
+    throw new Error(
+      'TURSO_DATABASE_URL nao configurada.\n' +
+        'Na Vercel o disco e somente leitura, entao o modo arquivo (DATABASE_FILE) nao funciona:\n' +
+        'a agenda nao teria onde guardar os eventos.\n' +
+        'Crie um banco gratuito em https://turso.tech e cadastre, em Settings > Environment\n' +
+        'Variables do projeto, as variaveis TURSO_DATABASE_URL e TURSO_AUTH_TOKEN.'
+    );
+  }
+
   const file = process.env.DATABASE_FILE || path.join(__dirname, '..', 'data', 'agenda.sqlite');
   const absolute = path.resolve(file);
   fs.mkdirSync(path.dirname(absolute), { recursive: true });

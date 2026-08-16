@@ -1,0 +1,11 @@
+node_modules
+data
+docs
+scripts
+*.sqlite
+Dockerfile
+docker-compose.yml
+fly.toml
+render.yaml
+deploy-fly.sh
+.env

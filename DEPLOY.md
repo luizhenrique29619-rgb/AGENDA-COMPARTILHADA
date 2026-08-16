@@ -21,23 +21,34 @@ serviço) dão conta de uma equipe inteira com folga.
 
 Roda o `Dockerfile` do repositório, tem volume de disco e servidor em São Paulo (`gru`).
 
+### Caminho curto: um script só
+
 ```bash
-# 1. Instale a CLI e faça login (abre o navegador)
-curl -L https://fly.io/install.sh | sh
-fly auth login
+curl -L https://fly.io/install.sh | sh    # instala a CLI
+fly auth login                            # abre o navegador
+./deploy-fly.sh agenda-da-sua-equipe      # faz o resto
+```
 
-# 2. Na pasta do projeto, crie o app (o fly.toml já está pronto; não deixe ele
-#    criar banco de dados nem implantar ainda)
-fly launch --no-deploy --copy-config --name SUA-AGENDA
+O `deploy-fly.sh` cria o app, cria o volume, gera e define o código de convite e publica.
+Ele **pode ser executado de novo com segurança**: cada etapa já concluída é ignorada, então
+se algo falhar no meio, corrija e rode outra vez. Ao final ele imprime o endereço e o código
+de convite.
 
-# 3. Crie o disco onde a agenda vai morar
+### Caminho manual, se preferir comando a comando
+
+```bash
+# 1. Crie o app (o fly.toml já está pronto; não deixe ele criar banco de dados
+#    nem implantar ainda)
+fly launch --no-deploy --copy-config --name SUA-AGENDA --region gru
+
+# 2. Crie o disco onde a agenda vai morar
 fly volumes create agenda_dados --size 1 --region gru
 
-# 4. Defina o código de convite da equipe
+# 3. Defina o código de convite da equipe
 fly secrets set INVITE_CODE="um-codigo-secreto-da-equipe"
 
-# 5. Publique
-fly deploy
+# 4. Publique
+fly deploy --remote-only
 fly open
 ```
 

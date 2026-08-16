@@ -16,10 +16,32 @@ const fs = require('fs');
 const path = require('path');
 const { createClient } = require('@libsql/client');
 
+const SCHEMES = ['libsql://', 'https://', 'http://', 'wss://', 'ws://', 'file:'];
+
+/*
+ * Valores colados em painel de hospedagem costumam vir com aspas, espacos ou
+ * sem o esquema. O cliente libSQL falharia com um erro dificil de entender, e
+ * bem no carregamento do modulo, entao a checagem acontece aqui.
+ */
+function checkRemoteUrl(url) {
+  const semAspas = url.replace(/^["']|["']$/g, '').trim();
+
+  if (!SCHEMES.some((scheme) => semAspas.startsWith(scheme))) {
+    throw new Error(
+      `TURSO_DATABASE_URL invalida: "${url}".\n` +
+        'O valor precisa ser o endereco do banco, comecando com libsql:// — por exemplo:\n' +
+        '  libsql://agenda-seuusuario.turso.io\n' +
+        'Confira se voce nao colou o token no lugar da URL, e remova aspas ou espacos.'
+    );
+  }
+  return semAspas;
+}
+
 function resolveConfig() {
   const remote = (process.env.TURSO_DATABASE_URL || '').trim();
   if (remote) {
-    return { url: remote, authToken: process.env.TURSO_AUTH_TOKEN || undefined };
+    const authToken = (process.env.TURSO_AUTH_TOKEN || '').replace(/^["']|["']$/g, '').trim();
+    return { url: checkRemoteUrl(remote), authToken: authToken || undefined };
   }
   const file = process.env.DATABASE_FILE || path.join(__dirname, '..', 'data', 'agenda.sqlite');
   const absolute = path.resolve(file);

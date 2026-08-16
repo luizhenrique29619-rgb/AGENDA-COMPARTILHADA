@@ -1,0 +1,23 @@
+{
+  "name": "agenda-compartilhada",
+  "version": "1.0.0",
+  "description": "Agenda compartilhada de equipe: todos os funcionarios podem criar, editar e comentar eventos.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "seed": "node scripts/seed.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.15.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2"
+  },
+  "license": "MIT",
+  "private": true
+}

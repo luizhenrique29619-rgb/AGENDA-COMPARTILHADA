@@ -1,0 +1,28 @@
+# Configuracao para publicar no Fly.io (https://fly.io).
+# Troque o nome do app se ele ja estiver em uso.
+app = "agenda-compartilhada"
+primary_region = "gru"   # Sao Paulo
+
+[build]
+
+[env]
+  PORT = "3000"
+  DATABASE_FILE = "/data/agenda.sqlite"
+  SECURE_COOKIES = "true"
+  SESSION_DAYS = "30"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+# O banco SQLite mora no volume; sem isso os dados somem a cada implantacao.
+[mounts]
+  source = "agenda_dados"
+  destination = "/data"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

@@ -1,0 +1,30 @@
+# Blueprint do Render (https://render.com).
+# No painel: New > Blueprint > aponte para este repositorio.
+#
+# Este arquivo usa o plano GRATUITO, que nao aceita disco persistente. Por isso
+# o banco fica no Turso (plano gratuito tambem), configurado pelas variaveis
+# TURSO_DATABASE_URL e TURSO_AUTH_TOKEN. O passo a passo esta no DEPLOY.md.
+#
+# Lembre-se: no plano gratuito o servico dorme apos 15 minutos sem acesso e o
+# primeiro acesso seguinte demora cerca de 1 minuto para responder.
+services:
+  - type: web
+    name: agenda-compartilhada
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci --omit=dev
+    startCommand: node src/server.js
+    healthCheckPath: /
+    envVars:
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: SESSION_DAYS
+        value: "30"
+      # As tres abaixo voce preenche no painel, na primeira implantacao.
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false
+      - key: INVITE_CODE
+        sync: false

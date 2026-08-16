@@ -1,0 +1,1290 @@
+<title>Agenda Compartilhada</title>
+<style>
+  :root {
+    --ground: #0e1116;
+    --panel: #161a21;
+    --panel-2: #1c212a;
+    --rule: #262d38;
+    --rule-soft: #1e242d;
+    --text: #e4e7ec;
+    --text-dim: #b7bec9;
+    --muted: #8d96a5;
+    --accent: #d3a24c;
+    --accent-dim: #8a6d34;
+    --yes: #6fae8f;
+    --no: #b9645c;
+    --p-ana: #6f9bf4;
+    --p-bruno: #ef8a5a;
+    --p-carla: #58b98d;
+    --p-neutro: #7b8798;
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+
+    --col: 1040px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: var(--col);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  a:hover { color: #e6bb6f; }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ------------------------------------------------- tipografia base */
+  h1, h2, h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  h1 { font-size: 44px; line-height: 1.1; }
+  h2 { font-size: 27px; line-height: 1.2; }
+  h3 { font-size: 19px; line-height: 1.3; }
+
+  p { margin: 0; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0;
+  }
+
+  .lead {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    max-width: 60ch;
+  }
+
+  .prose { max-width: 68ch; color: var(--text-dim); }
+  .note {
+    max-width: 68ch;
+    color: var(--muted);
+    font-size: 14.5px;
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 16px;
+  }
+
+  code, kbd {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    color: var(--text);
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+
+  /* ------------------------------------------------- cabeçalho */
+  header.masthead {
+    border-bottom: 1px solid var(--rule);
+    padding: 56px 0 44px;
+  }
+  .masthead-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+    gap: 48px;
+    align-items: start;
+  }
+  .titleblock { display: flex; flex-direction: column; gap: 18px; }
+  .titleblock h1 { margin-top: 4px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 4px 11px;
+    background: var(--panel);
+  }
+  .chip strong { color: var(--text-dim); font-weight: 500; }
+
+  /* ------------------------------------------------- mini calendário */
+  .cal {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 14px 14px 12px;
+  }
+  .cal-bar {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .cal-month {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: var(--text);
+  }
+  .cal-tag {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .cal-head, .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal-head { margin: 10px 0 4px; }
+  .cal-head span {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: center;
+  }
+  .cal-cell {
+    min-height: 40px;
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    padding: 3px 4px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .cal-cell.out { color: #4d5563; background: #12161c; }
+  .cal-cell.today {
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 1px rgba(211, 162, 76, .28);
+  }
+  .cal-ev {
+    font-family: var(--sans);
+    font-size: 9px;
+    line-height: 1.25;
+    border-radius: 3px;
+    padding: 2px 4px;
+    color: #0e1116;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 12px;
+    padding-top: 11px;
+    border-top: 1px solid var(--rule);
+  }
+  .cal-legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+
+  /* ------------------------------------------------- navegação */
+  nav.tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--ground);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tablist {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tablist::-webkit-scrollbar { display: none; }
+  .tablist button {
+    appearance: none;
+    background: none;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    font-family: var(--sans);
+    font-size: 14px;
+    padding: 15px 14px 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .tablist button:hover { color: var(--text-dim); }
+  .tablist button[aria-selected="true"] {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  /* ------------------------------------------------- painéis */
+  .panel { padding: 48px 0 72px; }
+  .panel[hidden] { display: none; }
+  .stack { display: flex; flex-direction: column; gap: 44px; }
+  .block { display: flex; flex-direction: column; gap: 16px; }
+  .block > .eyebrow + h2 { margin-top: -6px; }
+
+  /* ------------------------------------------------- tabelas */
+  .table-scroll { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14.5px;
+    font-variant-numeric: tabular-nums;
+  }
+  th, td {
+    text-align: left;
+    padding: 11px 14px 11px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 400;
+    border-bottom: 1px solid var(--accent-dim);
+    padding-bottom: 9px;
+  }
+  td { color: var(--text-dim); }
+  td strong { color: var(--text); font-weight: 600; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .num { text-align: center; padding-right: 0; }
+  th.num { text-align: center; }
+
+  .mark { font-size: 15px; font-weight: 700; }
+  .mark.y { color: var(--yes); }
+  .mark.n { color: var(--no); }
+  .mark-note { color: var(--muted); font-size: 12.5px; font-style: italic; }
+
+  .method {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--rule);
+    background: var(--panel-2);
+    white-space: nowrap;
+  }
+  .method.get { color: #7fb2e8; }
+  .method.post { color: var(--yes); }
+  .method.put { color: var(--accent); }
+  .method.delete { color: var(--no); }
+  td .route { font-family: var(--mono); font-size: 13px; color: var(--text); }
+
+  /* ------------------------------------------------- filtro da API */
+  .filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .filters .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+  .filters button {
+    appearance: none;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 5px 13px;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .filters button:hover { color: var(--text-dim); border-color: #333c49; }
+  .filters button[aria-pressed="true"] {
+    color: var(--ground);
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .empty-row td { color: var(--muted); font-style: italic; }
+
+  /* ------------------------------------------------- listas */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 56px;
+  }
+  .feature {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .feature dt { font-weight: 600; color: var(--text); font-size: 15px; }
+  .feature dd { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 14px; max-width: 68ch; }
+  ol.steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 40px;
+    min-height: 26px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  ol.steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 1px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    border: 1px solid var(--accent-dim);
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+  }
+
+  ul.bullets { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 11px; max-width: 68ch; }
+  ul.bullets li {
+    position: relative;
+    padding-left: 22px;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+  ul.bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 1px;
+    background: var(--accent-dim);
+  }
+
+  /* ------------------------------------------------- código */
+  .code {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  .code-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--panel-2);
+  }
+  .code-bar span {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .copy {
+    appearance: none;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 3px 9px;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease;
+  }
+  .copy:hover { color: var(--text); border-color: #3a4350; }
+  .code pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-dim);
+  }
+  .code pre .cm { color: #5f6b7d; }
+
+  /* ------------------------------------------------- hospedagem */
+  .hosts { display: flex; flex-direction: column; gap: 0; }
+  details.host {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.host:first-child { border-top: 1px solid var(--rule-soft); }
+  details.host > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 16px 20px;
+    align-items: baseline;
+  }
+  details.host > summary::-webkit-details-marker { display: none; }
+  .host-name { font-family: var(--serif); font-size: 19px; color: var(--text); }
+  .host-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .host-cost {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+  }
+  .host-cost.free { color: var(--yes); border-color: rgba(111, 174, 143, .4); }
+  .host-cost.paid { color: var(--accent); border-color: rgba(211, 162, 76, .4); }
+  .host-cost.own { color: var(--muted); }
+  .host-line { grid-column: 1 / -1; color: var(--muted); font-size: 14px; margin-top: -8px; }
+  .host-open {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .host-open::after { content: "ver passos"; }
+  details.host[open] .host-open { color: var(--accent); }
+  details.host[open] .host-open::after { content: "fechar"; }
+  .host-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 0 26px;
+    max-width: 72ch;
+  }
+
+  /* ------------------------------------------------- árvore */
+  .tree {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.85;
+    color: var(--muted);
+    margin: 0;
+    padding: 18px 20px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .tree b { color: var(--text-dim); font-weight: 500; }
+
+  /* ------------------------------------------------- rodapé */
+  footer {
+    border-top: 1px solid var(--rule);
+    padding: 28px 0 56px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 28px;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  footer .mono { font-family: var(--mono); font-size: 12px; }
+
+  @media (max-width: 860px) {
+    .masthead-grid { grid-template-columns: minmax(0, 1fr); gap: 36px; }
+    h1 { font-size: 34px; }
+    h2 { font-size: 23px; }
+    .lead { font-size: 18px; }
+    header.masthead { padding: 40px 0 32px; }
+    .panel { padding: 36px 0 56px; }
+    .features { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap masthead-grid">
+    <div class="titleblock">
+      <p class="eyebrow">Agenda de equipe · v1.0.0</p>
+      <h1>Agenda Compartilhada</h1>
+      <p class="lead">
+        Um calendário só da equipe, onde qualquer pessoa cria, edita e comenta os eventos —
+        aberto no navegador do computador ou do celular, sem instalar nada.
+      </p>
+      <div class="chips">
+        <span class="chip"><strong>Node.js</strong> 18+</span>
+        <span class="chip"><strong>Express</strong> 4</span>
+        <span class="chip"><strong>SQLite</strong> local ou Turso</span>
+        <span class="chip">sem dependências de front-end</span>
+        <span class="chip">licença <strong>MIT</strong></span>
+      </div>
+    </div>
+
+    <div class="cal" role="img" aria-label="Visão de mês da agenda em agosto de 2026, com quatro eventos de exemplo: reunião semanal no dia 16, entrega do relatório no 18, treinamento no 20 e feriado no 25.">
+      <div class="cal-bar">
+        <span class="cal-month">Agosto de 2026</span>
+        <span class="cal-tag">Visão de mês</span>
+      </div>
+      <div class="cal-head" aria-hidden="true">
+        <span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
+      </div>
+      <div class="cal-grid" aria-hidden="true">
+        <div class="cal-cell out">26</div><div class="cal-cell out">27</div><div class="cal-cell out">28</div>
+        <div class="cal-cell out">29</div><div class="cal-cell out">30</div><div class="cal-cell out">31</div>
+        <div class="cal-cell">1</div>
+
+        <div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div>
+        <div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div>
+        <div class="cal-cell">8</div>
+
+        <div class="cal-cell">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div>
+        <div class="cal-cell">12</div><div class="cal-cell">13</div><div class="cal-cell">14</div>
+        <div class="cal-cell">15</div>
+
+        <div class="cal-cell today">16
+          <div class="cal-ev" style="background: var(--p-ana)">09:00 Reunião</div>
+        </div>
+        <div class="cal-cell">17</div>
+        <div class="cal-cell">18
+          <div class="cal-ev" style="background: var(--p-bruno)">14:00 Relatório</div>
+        </div>
+        <div class="cal-cell">19</div>
+        <div class="cal-cell">20
+          <div class="cal-ev" style="background: var(--p-carla)">13:30 Treino</div>
+        </div>
+        <div class="cal-cell">21</div><div class="cal-cell">22</div>
+
+        <div class="cal-cell">23</div><div class="cal-cell">24</div>
+        <div class="cal-cell">25
+          <div class="cal-ev" style="background: var(--p-neutro); color: #e4e7ec">Feriado</div>
+        </div>
+        <div class="cal-cell">26</div><div class="cal-cell">27</div><div class="cal-cell">28</div>
+        <div class="cal-cell">29</div>
+
+        <div class="cal-cell">30</div><div class="cal-cell">31</div>
+        <div class="cal-cell out">1</div><div class="cal-cell out">2</div><div class="cal-cell out">3</div>
+        <div class="cal-cell out">4</div><div class="cal-cell out">5</div>
+      </div>
+      <div class="cal-legend">
+        <span><i class="dot" style="background: var(--p-ana)"></i> Ana Souza</span>
+        <span><i class="dot" style="background: var(--p-bruno)"></i> Bruno Lima</span>
+        <span><i class="dot" style="background: var(--p-carla)"></i> Carla Dias</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Seções">
+  <div class="wrap">
+    <div class="tablist" role="tablist">
+      <button role="tab" id="tab-visao" aria-controls="p-visao" aria-selected="true">Visão geral</button>
+      <button role="tab" id="tab-quem" aria-controls="p-quem" aria-selected="false" tabindex="-1">Quem faz o quê</button>
+      <button role="tab" id="tab-publicar" aria-controls="p-publicar" aria-selected="false" tabindex="-1">Colocar no ar</button>
+      <button role="tab" id="tab-api" aria-controls="p-api" aria-selected="false" tabindex="-1">API</button>
+      <button role="tab" id="tab-codigo" aria-controls="p-codigo" aria-selected="false" tabindex="-1">Segurança e código</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============================================================ VISÃO GERAL -->
+<section class="panel wrap stack" id="p-visao" role="tabpanel" aria-labelledby="tab-visao" tabindex="0">
+
+  <div class="block">
+    <p class="eyebrow">O que ela faz</p>
+    <h2>Uma agenda que a equipe inteira escreve</h2>
+    <p class="prose">
+      A maioria das agendas de empresa tem um dono: alguém marca, os outros olham. Esta parte do
+      princípio oposto — todo mundo edita tudo, e cada mudança fica registrada com nome e data.
+      A conversa sobre o evento acontece no próprio evento, e não em cinco mensagens soltas.
+    </p>
+  </div>
+
+  <dl class="features">
+    <div class="feature">
+      <dt>Qualquer pessoa cria</dt>
+      <dd>Clique em um dia do calendário ou no botão <b>+ Novo evento</b>.</dd>
+    </div>
+    <div class="feature">
+      <dt>Qualquer pessoa edita</dt>
+      <dd>Todo membro pode alterar qualquer evento, inclusive os criados por colegas.</dd>
+    </div>
+    <div class="feature">
+      <dt>Comentários no evento</dt>
+      <dd>Combine detalhes, avise atrasos, deixe a pauta. Cada um edita e apaga o próprio.</dd>
+    </div>
+    <div class="feature">
+      <dt>Histórico de alterações</dt>
+      <dd>Quem criou, quem editou, o que mudou e quem comentou — tudo datado.</dd>
+    </div>
+    <div class="feature">
+      <dt>Mês e lista</dt>
+      <dd>Calendário mensal colorido por pessoa, ou lista em ordem cronológica.</dd>
+    </div>
+    <div class="feature">
+      <dt>Busca</dt>
+      <dd>Procura por título, descrição ou local em toda a agenda.</dd>
+    </div>
+    <div class="feature">
+      <dt>Dia inteiro e vários dias</dt>
+      <dd>Para feriados, viagens e mutirões que não cabem em um horário.</dd>
+    </div>
+    <div class="feature">
+      <dt>Página da equipe</dt>
+      <dd>Lista de quem usa a agenda; administradores promovem colegas.</dd>
+    </div>
+    <div class="feature">
+      <dt>Acesso protegido</dt>
+      <dd>Login com senha e código de convite. Tema claro ou escuro conforme o aparelho.</dd>
+    </div>
+    <div class="feature">
+      <dt>Fuso de cada um</dt>
+      <dd>As datas trafegam em UTC e aparecem no horário local de quem está olhando.</dd>
+    </div>
+  </dl>
+
+  <div class="block">
+    <p class="eyebrow">Como começa</p>
+    <h2>Três minutos até a primeira tela</h2>
+    <p class="prose">
+      Não há banco de dados para instalar: o arquivo SQLite é criado sozinho na primeira
+      execução. <strong>A primeira pessoa que se cadastrar vira administradora.</strong>
+    </p>
+    <div class="code">
+      <div class="code-bar">
+        <span>Terminal</span>
+        <button class="copy" type="button">Copiar</button>
+      </div>
+<pre><code>git clone https://github.com/luizhenrique29619-rgb/AGENDA-COMPARTILHADA.git
+cd AGENDA-COMPARTILHADA
+npm install
+cp .env.example .env      <span class="cm"># ajuste a porta e o código de convite</span>
+npm start</code></pre>
+    </div>
+    <p class="note">
+      Abra <code>http://localhost:3000</code>. Para ver a agenda já com conteúdo, rode
+      <code>npm run seed</code> — ele cria três pessoas e alguns eventos, e o login de exemplo é
+      <code>ana@empresa.com</code> com a senha <code>senha1234</code>.
+    </p>
+  </div>
+
+</section>
+
+<!-- ============================================================ PERMISSÕES -->
+<section class="panel wrap stack" id="p-quem" role="tabpanel" aria-labelledby="tab-quem" tabindex="0" hidden>
+
+  <div class="block">
+    <p class="eyebrow">Permissões</p>
+    <h2>Quase tudo é de todos</h2>
+    <p class="prose">
+      Há só dois perfis: <strong>membro</strong> e <strong>administrador</strong>. A diferença
+      entre eles é menor do que se espera, porque criar e editar é liberado para a equipe inteira.
+    </p>
+  </div>
+
+  <div class="table-scroll">
+    <table>
+      <caption class="sr-only">O que cada perfil pode fazer</caption>
+      <thead>
+        <tr>
+          <th scope="col">Ação</th>
+          <th scope="col" class="num">Membro</th>
+          <th scope="col" class="num">Administrador</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Criar evento</strong></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Editar qualquer evento</strong><br><span class="mark-note">inclusive os criados por colegas</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Comentar</strong></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Editar o próprio comentário</strong></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Excluir evento</strong></td>
+          <td class="num"><span class="mark-note">só os que criou</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Excluir comentário</strong></td>
+          <td class="num"><span class="mark-note">só os próprios</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+        <tr>
+          <td><strong>Promover ou rebaixar colegas</strong></td>
+          <td class="num"><span class="mark n" aria-label="não pode">✕</span></td>
+          <td class="num"><span class="mark y" aria-label="pode">✓</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="note">
+    A exclusão é o único ponto mais fechado: como não dá para desfazer, ela fica com quem criou o
+    evento ou com um administrador. Se a sua equipe preferir liberar a exclusão para todo mundo,
+    remova a checagem na rota <code>DELETE /:id</code> em <code>src/routes/events.js</code>.
+  </p>
+
+  <div class="block">
+    <p class="eyebrow">Como alguém entra</p>
+    <h2>Convidando a equipe</h2>
+    <ol class="steps">
+      <li>Publique a agenda em um endereço que a equipe alcance.</li>
+      <li>Defina um <code>INVITE_CODE</code> e mande para os colegas junto com o link.</li>
+      <li>Cada pessoa clica em <b>Criar conta</b> e informa nome, e-mail de trabalho, senha e o código.</li>
+      <li>Pronto: todos veem a mesma agenda, e as edições de um aparecem para os outros ao recarregar.</li>
+    </ol>
+    <p class="note">
+      Quem entra primeiro vira administrador — então crie a sua conta antes de mandar o link.
+      Sem o código de convite, ninguém consegue se cadastrar.
+    </p>
+  </div>
+
+</section>
+
+<!-- ============================================================ PUBLICAR -->
+<section class="panel wrap stack" id="p-publicar" role="tabpanel" aria-labelledby="tab-publicar" tabindex="0" hidden>
+
+  <div class="block">
+    <p class="eyebrow">Hospedagem</p>
+    <h2>Três caminhos para deixar no ar</h2>
+    <p class="prose">
+      O mesmo código roda nos três. O que muda é onde ficam os dados e quanto custa. Abra o
+      caminho que fizer sentido para ver os comandos.
+    </p>
+  </div>
+
+  <div class="hosts">
+    <details class="host">
+      <summary>
+        <span class="host-meta">
+          <span class="host-name">Render + Turso</span>
+          <span class="host-cost free">Grátis</span>
+        </span>
+        <span class="host-open"></span>
+        <span class="host-line">Nenhuma das duas contas pede cartão. Dorme após 15 min sem uso — o primeiro acesso depois disso leva cerca de um minuto.</span>
+      </summary>
+      <div class="host-body">
+        <p class="prose">
+          Primeiro crie o banco em <a href="https://turso.tech">turso.tech</a> e guarde a URL
+          (<code>libsql://…</code>) e um token de acesso. Depois, no
+          <a href="https://render.com">render.com</a>: <b>New → Blueprint</b>, escolha este
+          repositório e o Render lê o <code>render.yaml</code> sozinho, pedindo três variáveis.
+        </p>
+        <div class="code">
+          <div class="code-bar">
+            <span>Criando o banco pelo terminal</span>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+<pre><code>curl -sSfL https://get.tur.so/install.sh | bash
+turso auth signup
+turso db create agenda
+turso db show agenda --url        <span class="cm"># a URL</span>
+turso db tokens create agenda     <span class="cm"># o token</span></code></pre>
+        </div>
+        <p class="note">
+          Hospedagem gratuita quase nunca tem disco que sobreviva a reinícios. É por isso que este
+          caminho usa o Turso: com o banco na nuvem, os dados continuam lá mesmo quando o serviço
+          dorme ou reinicia.
+        </p>
+      </div>
+    </details>
+
+    <details class="host">
+      <summary>
+        <span class="host-meta">
+          <span class="host-name">Fly.io</span>
+          <span class="host-cost paid">Alguns dólares por mês</span>
+        </span>
+        <span class="host-open"></span>
+        <span class="host-line">Roda o <code>Dockerfile</code> do repositório, com disco próprio e servidor em São Paulo. Não dorme, mas pede cartão de crédito no cadastro.</span>
+      </summary>
+      <div class="host-body">
+        <p class="prose">
+          O script <code>deploy-fly.sh</code> cria o app, o volume, gera o código de convite e
+          publica. Pode ser executado de novo com segurança — cada etapa já concluída é ignorada.
+          Ao final ele imprime o endereço e o código.
+        </p>
+        <div class="code">
+          <div class="code-bar">
+            <span>Terminal</span>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+<pre><code>curl -L https://fly.io/install.sh | sh    <span class="cm"># instala a CLI</span>
+fly auth login                            <span class="cm"># abre o navegador</span>
+./deploy-fly.sh agenda-da-sua-equipe      <span class="cm"># faz o resto</span></code></pre>
+        </div>
+        <div class="code">
+          <div class="code-bar">
+            <span>Ou comando a comando</span>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+<pre><code>fly launch --no-deploy --copy-config --name SUA-AGENDA --region gru
+fly volumes create agenda_dados --size 1 --region gru
+fly secrets set INVITE_CODE="um-codigo-secreto-da-equipe"
+fly deploy --remote-only
+fly open</code></pre>
+        </div>
+      </div>
+    </details>
+
+    <details class="host">
+      <summary>
+        <span class="host-meta">
+          <span class="host-name">Servidor próprio ou VPS</span>
+          <span class="host-cost own">O que você já paga</span>
+        </span>
+        <span class="host-open"></span>
+        <span class="host-line">Qualquer máquina com Docker, inclusive um servidor da empresa. Em troca, o servidor fica por sua conta.</span>
+      </summary>
+      <div class="host-body">
+        <div class="code">
+          <div class="code-bar">
+            <span>Subindo com Docker Compose</span>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+<pre><code>git clone https://github.com/luizhenrique29619-rgb/AGENDA-COMPARTILHADA.git
+cd AGENDA-COMPARTILHADA
+INVITE_CODE="um-codigo-secreto-da-equipe" docker compose up -d</code></pre>
+        </div>
+        <p class="prose">
+          A agenda responde na porta <code>3000</code> e o banco fica no volume
+          <code>agenda-dados</code>. Coloque um proxy reverso com HTTPS na frente — Caddy, Nginx ou
+          Cloudflare Tunnel — e só então ligue <code>SECURE_COOKIES=true</code>.
+        </p>
+        <div class="code">
+          <div class="code-bar">
+            <span>Caddyfile mínimo, com certificado automático</span>
+            <button class="copy" type="button">Copiar</button>
+          </div>
+<pre><code>agenda.suaempresa.com.br {
+    reverse_proxy localhost:3000
+}</code></pre>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Configuração</p>
+    <h2>Variáveis de ambiente</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Variável</th>
+            <th scope="col">Para que serve</th>
+            <th scope="col">Padrão</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="route">INVITE_CODE</span></td>
+            <td>Código que os colegas digitam ao criar a conta. Deixe em branco só se a agenda estiver em rede interna.</td>
+            <td><span class="mark-note">vazio</span></td>
+          </tr>
+          <tr>
+            <td><span class="route">TURSO_DATABASE_URL</span></td>
+            <td>Banco SQLite na nuvem. Quando preenchida, tem prioridade sobre o arquivo local.</td>
+            <td><span class="mark-note">vazio</span></td>
+          </tr>
+          <tr>
+            <td><span class="route">TURSO_AUTH_TOKEN</span></td>
+            <td>Token de acesso do banco Turso.</td>
+            <td><span class="mark-note">vazio</span></td>
+          </tr>
+          <tr>
+            <td><span class="route">DATABASE_FILE</span></td>
+            <td>Onde guardar o banco, quando ele é um arquivo local.</td>
+            <td><code>./data/agenda.sqlite</code></td>
+          </tr>
+          <tr>
+            <td><span class="route">SECURE_COOKIES</span></td>
+            <td>Ligue com <code>true</code> quando o site estiver publicado em HTTPS.</td>
+            <td><code>false</code></td>
+          </tr>
+          <tr>
+            <td><span class="route">SESSION_DAYS</span></td>
+            <td>Quantos dias o login continua válido.</td>
+            <td><code>30</code></td>
+          </tr>
+          <tr>
+            <td><span class="route">PORT</span></td>
+            <td>Porta do servidor. Render e Fly definem sozinhos.</td>
+            <td><code>3000</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Backup</p>
+    <h2>Levar uma cópia embora</h2>
+    <p class="prose">
+      Tudo — eventos, comentários, histórico e pessoas — está em um único banco SQLite. Copiar
+      esse banco é o backup completo.
+    </p>
+    <div class="code">
+      <div class="code-bar">
+        <span>Turso</span>
+        <button class="copy" type="button">Copiar</button>
+      </div>
+<pre><code>turso db shell agenda ".dump" &gt; copia.sql</code></pre>
+    </div>
+    <div class="code">
+      <div class="code-bar">
+        <span>Arquivo local ou Docker</span>
+        <button class="copy" type="button">Copiar</button>
+      </div>
+<pre><code>docker compose exec agenda sh -c "sqlite3 /data/agenda.sqlite '.backup /data/copia.sqlite'"
+docker compose cp agenda:/data/copia.sqlite ./copia.sqlite</code></pre>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================ API -->
+<section class="panel wrap stack" id="p-api" role="tabpanel" aria-labelledby="tab-api" tabindex="0" hidden>
+
+  <div class="block">
+    <p class="eyebrow">Interface HTTP</p>
+    <h2>Quinze rotas, todas em JSON</h2>
+    <p class="prose">
+      Tudo abaixo de <code>/api</code> — menos as rotas de autenticação — exige sessão ativa. As
+      datas trafegam em ISO 8601 (UTC) e são exibidas no fuso do navegador de cada pessoa.
+    </p>
+    <div class="filters">
+      <span class="label">Filtrar</span>
+      <button type="button" data-method="all" aria-pressed="true">Todos</button>
+      <button type="button" data-method="GET" aria-pressed="false">GET</button>
+      <button type="button" data-method="POST" aria-pressed="false">POST</button>
+      <button type="button" data-method="PUT" aria-pressed="false">PUT</button>
+      <button type="button" data-method="DELETE" aria-pressed="false">DELETE</button>
+    </div>
+  </div>
+
+  <div class="table-scroll">
+    <table id="api-table">
+      <thead>
+        <tr>
+          <th scope="col">Método</th>
+          <th scope="col">Rota</th>
+          <th scope="col">O que faz</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/auth/register</span></td>
+          <td>Cria conta com <code>name</code>, <code>email</code>, <code>password</code> e <code>invite</code>.</td>
+        </tr>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/auth/login</span></td>
+          <td>Entra na agenda e abre a sessão.</td>
+        </tr>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/auth/logout</span></td>
+          <td>Encerra a sessão.</td>
+        </tr>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/auth/password</span></td>
+          <td>Troca a senha da própria conta.</td>
+        </tr>
+        <tr data-method="GET">
+          <td><span class="method get">GET</span></td>
+          <td><span class="route">/api/auth/me</span></td>
+          <td>Devolve o usuário da sessão atual.</td>
+        </tr>
+        <tr data-method="GET">
+          <td><span class="method get">GET</span></td>
+          <td><span class="route">/api/events?from=&amp;to=&amp;search=</span></td>
+          <td>Lista os eventos de um período ou de uma busca.</td>
+        </tr>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/events</span></td>
+          <td>Cria um evento.</td>
+        </tr>
+        <tr data-method="GET">
+          <td><span class="method get">GET</span></td>
+          <td><span class="route">/api/events/:id</span></td>
+          <td>Evento completo, com comentários e histórico.</td>
+        </tr>
+        <tr data-method="PUT">
+          <td><span class="method put">PUT</span></td>
+          <td><span class="route">/api/events/:id</span></td>
+          <td>Edita o evento. Aberto a qualquer membro.</td>
+        </tr>
+        <tr data-method="DELETE">
+          <td><span class="method delete">DELETE</span></td>
+          <td><span class="route">/api/events/:id</span></td>
+          <td>Exclui o evento. Só o criador ou um administrador.</td>
+        </tr>
+        <tr data-method="POST">
+          <td><span class="method post">POST</span></td>
+          <td><span class="route">/api/events/:id/comments</span></td>
+          <td>Comenta no evento.</td>
+        </tr>
+        <tr data-method="PUT">
+          <td><span class="method put">PUT</span></td>
+          <td><span class="route">/api/comments/:id</span></td>
+          <td>Edita o próprio comentário.</td>
+        </tr>
+        <tr data-method="DELETE">
+          <td><span class="method delete">DELETE</span></td>
+          <td><span class="route">/api/comments/:id</span></td>
+          <td>Exclui o comentário. Só o autor ou um administrador.</td>
+        </tr>
+        <tr data-method="GET">
+          <td><span class="method get">GET</span></td>
+          <td><span class="route">/api/users</span></td>
+          <td>Lista a equipe.</td>
+        </tr>
+        <tr data-method="PUT">
+          <td><span class="method put">PUT</span></td>
+          <td><span class="route">/api/users/:id/role</span></td>
+          <td>Muda o perfil de alguém. Só administradores.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- ============================================================ CÓDIGO -->
+<section class="panel wrap stack" id="p-codigo" role="tabpanel" aria-labelledby="tab-codigo" tabindex="0" hidden>
+
+  <div class="block">
+    <p class="eyebrow">Segurança</p>
+    <h2>O que já vem cuidado</h2>
+    <ul class="bullets">
+      <li>Senhas guardadas com <code>bcrypt</code>; sessões em cookie <code>httpOnly</code> com <code>SameSite=Lax</code>.</li>
+      <li>Limite de 10 tentativas de login por IP a cada 15 minutos.</li>
+      <li>Todo conteúdo escrito pela equipe entra na tela como texto puro, sem HTML — o que fecha a porta para XSS.</li>
+      <li>As consultas ao banco usam sempre parâmetros preparados.</li>
+      <li>Em produção, sirva atrás de HTTPS e ligue <code>SECURE_COOKIES=true</code>.</li>
+    </ul>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Estrutura</p>
+    <h2>Onde fica cada coisa</h2>
+    <p class="prose">
+      Sem framework de front-end e sem etapa de build: o servidor entrega os arquivos de
+      <code>public/</code> como estão.
+    </p>
+<pre class="tree"><b>src/</b>
+  <b>server.js</b>          Express: middlewares, API e arquivos estáticos
+  <b>db.js</b>              Banco (arquivo local ou Turso) + criação das tabelas
+  <b>auth.js</b>            Sessões em cookie httpOnly
+  <b>wrap.js</b>            Encaminha erros de rotas assíncronas ao tratador
+  <b>routes/</b>
+    <b>auth.js</b>          cadastro, login, logout, troca de senha
+    <b>events.js</b>        eventos e criação de comentários
+    <b>comments.js</b>      edição e exclusão de comentários
+    <b>users.js</b>         equipe e permissões
+<b>public/</b>
+  <b>index.html</b>         Telas de login e da agenda
+  <b>css/styles.css</b>     Estilo, com tema claro e escuro
+  <b>js/app.js</b>          Calendário, formulários e comentários
+<b>scripts/seed.js</b>      Dados de demonstração</pre>
+  </div>
+
+  <div class="block">
+    <p class="eyebrow">Dependências</p>
+    <h2>Quatro pacotes, e só</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Pacote</th>
+            <th scope="col">Versão</th>
+            <th scope="col">Para quê</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="route">express</span></td>
+            <td><span class="route">^4.21.2</span></td>
+            <td>Servidor HTTP, rotas e arquivos estáticos.</td>
+          </tr>
+          <tr>
+            <td><span class="route">@libsql/client</span></td>
+            <td><span class="route">^0.15.0</span></td>
+            <td>Fala com o SQLite, seja arquivo local ou Turso.</td>
+          </tr>
+          <tr>
+            <td><span class="route">bcryptjs</span></td>
+            <td><span class="route">^2.4.3</span></td>
+            <td>Guarda as senhas em hash.</td>
+          </tr>
+          <tr>
+            <td><span class="route">cookie-parser</span></td>
+            <td><span class="route">^1.4.7</span></td>
+            <td>Lê o cookie de sessão.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer class="wrap">
+  <span>Agenda Compartilhada · agenda de equipe em Node.js e SQLite</span>
+  <span class="mono">MIT · v1.0.0</span>
+</footer>
+
+<script>
+  // -------------------------------------------------------------- abas
+  (function () {
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+
+    function select(tab, focus) {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+      if (focus) tab.focus();
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    tabs.forEach(function (tab, i) {
+      tab.addEventListener('click', function () { select(tab, false); });
+      tab.addEventListener('keydown', function (e) {
+        var next = null;
+        if (e.key === 'ArrowRight') next = tabs[(i + 1) % tabs.length];
+        else if (e.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
+        else if (e.key === 'Home') next = tabs[0];
+        else if (e.key === 'End') next = tabs[tabs.length - 1];
+        if (next) { e.preventDefault(); select(next, true); }
+      });
+    });
+  })();
+
+  // -------------------------------------------------- filtro da API
+  (function () {
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('.filters button'));
+    var rows = Array.prototype.slice.call(document.querySelectorAll('#api-table tbody tr'));
+    if (!buttons.length) return;
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var want = btn.getAttribute('data-method');
+        buttons.forEach(function (b) {
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        rows.forEach(function (row) {
+          row.hidden = want !== 'all' && row.getAttribute('data-method') !== want;
+        });
+      });
+    });
+  })();
+
+  // ------------------------------------------------ copiar comandos
+  (function () {
+    document.querySelectorAll('.copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var block = btn.closest('.code');
+        var pre = block && block.querySelector('pre');
+        if (!pre) return;
+
+        var reset = function (label) {
+          btn.textContent = label;
+          setTimeout(function () { btn.textContent = 'Copiar'; }, 2000);
+        };
+
+        var selection = window.getSelection();
+        var range = document.createRange();
+        range.selectNodeContents(pre);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(pre.innerText).then(function () {
+            selection.removeAllRanges();
+            reset('Copiado');
+          }, function () {
+            reset('Selecionado — use Ctrl+C');
+          });
+        } else {
+          reset('Selecionado — use Ctrl+C');
+        }
+      });
+    });
+  })();
+</script>
